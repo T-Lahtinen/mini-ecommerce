@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-
-type Product = {
-    product_no: string;
-    name: string;
-    description: string | null;
-    price: string;
-    sale_price: string | null;
-    discount_percentage: number | null;
-};
+import ProductList from "../components/ProductList.vue";
+import type { Product } from "../types/Product";
 
 const products = ref<Product[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
+
+function addToCart(product: Product): void {
+    alert(`${product.name} will be added to the cart in the next step.`);
+}
 
 onMounted(async () => {
     try {
@@ -40,25 +37,6 @@ onMounted(async () => {
         <p v-else-if="error">{{ error }}</p>
         <p v-else-if="products.length === 0">No products found.</p>
 
-        <section v-else class="product-grid">
-            <article
-                v-for="product in products"
-                :key="product.product_no"
-                class="product-card"
-            >
-                <h2>{{ product.name }}</h2>
-                <p>{{ product.description }}</p>
-
-                <p v-if="product.sale_price">
-                    <span class="old-price">{{ product.price }}€</span>
-                    <strong>{{ product.sale_price }}€</strong>
-                    <span> -{{ product.discount_percentage }}%</span>
-                </p>
-
-                <p v-else>
-                    <strong>{{ product.price }}€</strong>
-                </p>
-            </article>
-        </section>
+        <ProductList v-else :products="products" @add-to-cart="addToCart" />
     </main>
 </template>
