@@ -1,4 +1,4 @@
-# Decision Log - <Tommi Lahtinen>
+# Decision Log - Tommi Lahtinen
 
 ## How to run it
 
