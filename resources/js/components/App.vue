@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import Cart from "../components/Cart.vue";
+import CheckoutForm from "../components/CheckoutForm.vue";
 import ProductList from "../components/ProductList.vue";
 import type { CartItem } from "../types/CartItem";
 import type { Product } from "../types/Product";
@@ -59,6 +60,10 @@ function removeFromCart(productNo: string): void {
     );
 }
 
+function clearCart(): void {
+    cartItems.value = [];
+}
+
 onMounted(async () => {
     try {
         const response = await fetch("/api/products");
@@ -94,12 +99,16 @@ onMounted(async () => {
                 />
             </section>
 
-            <Cart
-                :items="cartItems"
-                @increase="increaseQuantity"
-                @decrease="decreaseQuantity"
-                @remove="removeFromCart"
-            />
+            <aside>
+                <Cart
+                    :items="cartItems"
+                    @increase="increaseQuantity"
+                    @decrease="decreaseQuantity"
+                    @remove="removeFromCart"
+                />
+
+                <CheckoutForm :items="cartItems" @order-placed="clearCart" />
+            </aside>
         </div>
     </main>
 </template>
