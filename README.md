@@ -66,6 +66,7 @@ cp .env.example .env
 ```
 
 Start the Docker containers:
+NOTE! If the build initially fails, try the same command again.
 
 ```bash
 docker compose up -d --build
