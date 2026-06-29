@@ -1,14 +1,62 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import Cart from "../components/Cart.vue";
 import ProductList from "../components/ProductList.vue";
+import type { CartItem } from "../types/CartItem";
 import type { Product } from "../types/Product";
 
 const products = ref<Product[]>([]);
+const cartItems = ref<CartItem[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
 function addToCart(product: Product): void {
-    alert(`${product.name} will be added to the cart in the next step.`);
+    const existingItem = cartItems.value.find(
+        (item) => item.product.product_no === product.product_no,
+    );
+
+    if (existingItem) {
+        existingItem.quantity++;
+        return;
+    }
+
+    cartItems.value.push({
+        product,
+        quantity: 1,
+    });
+}
+
+function increaseQuantity(productNo: string): void {
+    const item = cartItems.value.find(
+        (item) => item.product.product_no === productNo,
+    );
+
+    if (item) {
+        item.quantity++;
+    }
+}
+
+function decreaseQuantity(productNo: string): void {
+    const item = cartItems.value.find(
+        (item) => item.product.product_no === productNo,
+    );
+
+    if (!item) {
+        return;
+    }
+
+    if (item.quantity === 1) {
+        removeFromCart(productNo);
+        return;
+    }
+
+    item.quantity--;
+}
+
+function removeFromCart(productNo: string): void {
+    cartItems.value = cartItems.value.filter(
+        (item) => item.product.product_no !== productNo,
+    );
 }
 
 onMounted(async () => {
@@ -33,10 +81,25 @@ onMounted(async () => {
     <main class="page">
         <h1>Mini E-commerce</h1>
 
-        <p v-if="loading">Loading products...</p>
-        <p v-else-if="error">{{ error }}</p>
-        <p v-else-if="products.length === 0">No products found.</p>
+        <div class="layout">
+            <section>
+                <p v-if="loading">Loading products...</p>
+                <p v-else-if="error">{{ error }}</p>
+                <p v-else-if="products.length === 0">No products found.</p>
 
-        <ProductList v-else :products="products" @add-to-cart="addToCart" />
+                <ProductList
+                    v-else
+                    :products="products"
+                    @add-to-cart="addToCart"
+                />
+            </section>
+
+            <Cart
+                :items="cartItems"
+                @increase="increaseQuantity"
+                @decrease="decreaseQuantity"
+                @remove="removeFromCart"
+            />
+        </div>
     </main>
 </template>
