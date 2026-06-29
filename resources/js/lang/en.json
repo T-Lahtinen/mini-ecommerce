@@ -1,0 +1,27 @@
+{
+  "appTitle": "Mini Commerce",
+  "products": {
+    "productsTitle": "Products",
+    "loadingProducts": "Loading products...",
+    "addToOrder": "Add to order",
+    "onSale": "ON SALE!"
+  },
+  "order": {
+    "orderTitle": "Order",
+    "noItemsSelected": "No items selected.",
+    "remove": "Remove",
+    "total": "Total",
+    "firstName": "First name (required)",
+    "lastName": "Last name (required)",
+    "email": "Email (required)",
+    "placeOrder": "Place order",
+    "placingOrder": "Placing order...",
+    "orderSuccess": "Order #{id} placed successfully.",
+    "validation": {
+        "genericOrderError": "Could not place the order. Please contact customer support.",
+        "invalidEmail": "Please enter a valid email address.",
+        "requiredField": "This field is required.",
+        "invalidQuantity": "Quantity must be between 1 and 99."
+    }
+  }
+}

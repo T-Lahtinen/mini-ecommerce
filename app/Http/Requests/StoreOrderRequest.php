@@ -8,6 +8,7 @@ class StoreOrderRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        // TODO: Implement proper auth.
         return true;
     }
 

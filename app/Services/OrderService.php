@@ -2,30 +2,43 @@
 
 namespace App\Services;
 
-use App\Data\OrderData;
+use App\Data\CreateOrderData;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class OrderService
 {
-    public function create(OrderData $data): Order
+    public function create(CreateOrderData $data): Order
     {
-        return DB::transaction(function () use ($data): Order {
+        return DB::transaction(function () use ($data) {
+            $productNos = collect($data->items)->pluck('productNo');
+
             $products = Product::query()
-                ->whereIn('product_no', collect($data->items)->pluck('productNo'))
+                ->whereIn('product_no', $productNos)
                 ->get()
                 ->keyBy('product_no');
 
-            $totalPrice = 0;
+            $missingProductNos = $productNos
+                ->diff($products->keys())
+                ->values();
 
-            foreach ($data->items as $item) {
-                $product = $products->get($item->productNo);
-                $unitPrice = (float) ($product->sale_price ?? $product->price);
-                $totalPrice += $unitPrice * $item->quantity;
+            if ($missingProductNos->isNotEmpty()) {
+                throw new InvalidArgumentException(
+                    'Products not found: '.$missingProductNos->implode(', ')
+                );
             }
 
-            $order = Order::query()->create([
+            $totalPrice = collect($data->items)->sum(function ($item) use ($products) {
+                $product = $products->get($item->productNo);
+                $effectivePrice = $product->sale_price ?? $product->price;
+
+                return $effectivePrice * $item->quantity;
+            });
+
+            $order = Order::create([
                 'first_name' => $data->firstName,
                 'last_name' => $data->lastName,
                 'customer_email' => $data->customerEmail,
@@ -34,17 +47,23 @@ class OrderService
 
             foreach ($data->items as $item) {
                 $product = $products->get($item->productNo);
-                $unitPrice = (float) ($product->sale_price ?? $product->price);
+                $effectivePrice = $product->sale_price ?? $product->price;
+                $lineTotal = $effectivePrice * $item->quantity;
 
                 $order->items()->create([
                     'product_id' => $product->id,
                     'quantity' => $item->quantity,
-                    'unit_price' => $unitPrice,
-                    'line_total' => $unitPrice * $item->quantity,
+                    'unit_price' => $effectivePrice,
+                    'line_total' => $lineTotal,
                 ]);
             }
 
-            return $order->load('items');
+            Log::info('Order created', [
+                'order_id' => $order->id,
+                'total_price' => $order->total_price,
+            ]);
+
+            return $order->load('items.product');
         });
     }
 }

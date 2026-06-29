@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -20,19 +19,23 @@ class Product extends Model
         'sale_price' => 'decimal:2',
     ];
 
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
     public function discountPercentage(): ?int
     {
-        if ($this->sale_price === null || (float) $this->price <= 0) {
+        if ($this->sale_price === null) {
+            return null;
+        }
+
+        if ((float) $this->price <= 0) {
             return null;
         }
 
         return (int) round(
             (((float) $this->price - (float) $this->sale_price) / (float) $this->price) * 100
         );
-    }
-
-    public function orderItems(): HasMany
-    {
-        return $this->hasMany(OrderItem::class);
     }
 }

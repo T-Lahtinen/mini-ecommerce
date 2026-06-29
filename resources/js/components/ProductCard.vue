@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import type { Product } from "../types/Product";
+import type { Product } from '../types';
+import ProductPrice from './ProductPrice.vue';
+import en from '../lang/en.json';
 
 defineProps<{
     product: Product;
@@ -8,25 +10,66 @@ defineProps<{
 const emit = defineEmits<{
     addToCart: [product: Product];
 }>();
+
+const t = en;
 </script>
 
 <template>
-    <article class="product-card">
-        <h2>{{ product.name }}</h2>
-        <p>{{ product.description }}</p>
+    <div class="product-card">
+        <!-- TODO: implement a more responsive solution if product name or description end up being very long. -->
+        <div class="product-content">
+            <div class="product-main">
+                <strong>
+                    {{ product.name }}
 
-        <p v-if="product.sale_price">
-            <span class="old-price">{{ product.price }}€</span>
-            <strong>{{ product.sale_price }}€</strong>
-            <span> -{{ product.discount_percentage }}%</span>
-        </p>
+                    <span
+                        v-if="product.salePrice"
+                        class="sale-badge"
+                    >
+                        {{ t.products.onSale }}
+                    </span>
+                </strong>
 
-        <p v-else>
-            <strong>{{ product.price }}$</strong>
-        </p>
+                <ProductPrice
+                    :price="product.price"
+                    :sale-price="product.salePrice"
+                    :discount-percentage="product.discountPercentage"
+                />
 
-        <button type="button" @click="emit('addToCart', product)">
-            Add to cart
-        </button>
-    </article>
+                <button @click="emit('addToCart', product)">
+                    {{ t.products.addToOrder }}
+                </button>
+            </div>
+
+            <div class="product-description">
+                {{ product.description }}
+            </div>
+        </div>
+    </div>
 </template>
+
+<style scoped>
+.product-card {
+    border: 1px solid #ddd;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.product-content {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.product-main {
+    width: 200px;
+}
+
+.product-description {
+    width: 100%;
+}
+
+.sale-badge {
+    color: orangered;
+}
+</style>
